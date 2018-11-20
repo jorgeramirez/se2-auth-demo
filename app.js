@@ -10,7 +10,10 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-googleAuth(app);
+
+if (process.env.NODE_ENV !== 'test') {
+  googleAuth(app);
+}
 
 // health check (public endpoint)
 app.get('/', (req, res) => {
