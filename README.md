@@ -31,6 +31,6 @@ Endpoints
 To call the protected endpoint you need to pass in the token
 
 ```
-$ curl -v -H "Authorization: Bearer <generated token>" http://127.0.0.1:3000/api/v1/me
-$ curl -v http://127.0.0.1:3000/api/v1/me?access_token=<generated token>
+$ curl -v -H "Authorization: Bearer <generated token>" http://localhost:3000/api/v1/me
+$ curl -v http://localhost:3000/api/v1/me?access_token=<generated token>
 ```
