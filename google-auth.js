@@ -51,7 +51,7 @@ const registerGoogleAuth = app => {
         // here we would store the user information in the db, if the user does not exist.
         let user = User.findOrCreate(profile);
         return done(null, {
-          profile,
+          user,
           token
         });
       }
