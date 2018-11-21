@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const fetch = require('node-fetch');
 const passport = require('passport');
 
-const googleAuth = require('./google-auth');
+const { auth, protect } = require('./google-auth');
 
 const API_BASE_URL = '/api/v1';
 const app = express();
@@ -11,9 +11,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-if (process.env.NODE_ENV !== 'test') {
-  googleAuth(app);
-}
+auth(app);
 
 // health check (public endpoint)
 app.get('/', (req, res) => {
@@ -21,12 +19,8 @@ app.get('/', (req, res) => {
 });
 
 // private endpoint
-app.get(
-  `${API_BASE_URL}/me`,
-  passport.authenticate('bearer', { session: false }),
-  (req, res) => {
-    res.json({ ...req.user });
-  }
-);
+app.get(`${API_BASE_URL}/me`, protect(), (req, res) => {
+  res.json({ ...req.user });
+});
 
 module.exports = app;

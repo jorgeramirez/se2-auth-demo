@@ -5,13 +5,33 @@ const { Strategy } = require('passport-http-bearer');
 
 const { User } = require('./db');
 
+/**
+ * Function to register google authentication workflow.
+ *
+ * @param {Object} app
+ */
+exports.auth = app => {
+  app.use(passport.initialize());
+
+  if (process.env.NODE_ENV !== 'test') {
+    registerGoogleAuth(app);
+    registerBearerAuth();
+  } else {
+    registerBearerMock();
+  }
+};
+
+/**
+ * A tiny helper to make an endpoint protected.
+ */
+exports.protect = () => {
+  return passport.authenticate('bearer', { session: false });
+};
+
 // for further reference
 // http://www.passportjs.org/docs/google/
 // https://github.com/jaredhanson/passport-google-oauth2
-
-module.exports = app => {
-  app.use(passport.initialize());
-
+const registerGoogleAuth = app => {
   passport.serializeUser((user, done) => {
     done(null, user);
   });
@@ -57,9 +77,12 @@ module.exports = app => {
       res.json({ token: req.user.token });
     }
   );
+};
 
-  // let's define the a bearer token strategy that we will
-  // use to protect our API.
+/**
+ * Registers the a bearer token strategy that we will use to protect our API.
+ */
+const registerBearerAuth = () => {
   // docs
   //    https://github.com/googleapis/google-auth-library-nodejs#oauth2
   //    https://github.com/jaredhanson/passport-http-bearer
@@ -75,6 +98,20 @@ module.exports = app => {
         );
         const tokenInfo = await client.getTokenInfo(token);
         const user = User.findOrCreate({ id: tokenInfo.sub });
+        return cb(null, user);
+      } catch (error) {
+        console.error(error);
+        return cb(null, false);
+      }
+    })
+  );
+};
+
+const registerBearerMock = () => {
+  passport.use(
+    new Strategy(async (token, cb) => {
+      try {
+        const user = User.findOrCreate({ id: token });
         return cb(null, user);
       } catch (error) {
         console.error(error);
